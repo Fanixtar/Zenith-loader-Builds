@@ -1,0 +1,47 @@
+name: Publish
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install MSBuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Clone
+      shell: bash
+      run: git clone --recurse-submodules https://github.com/latuh/zenith-injector
+        
+    - name: Build solution
+      working-directory: ./zenith-injector
+      env:
+        SOLUTION_FILE_PATH: ./ZenithInjector.sln
+        BUILD_CONFIGURATION: Release
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+        
+    - name: Removing unused files
+      shell: bash
+      run: |
+        rm -rf ./zenith-injector/Release/obj
+        rm -rf ./zenith-injector/Release/*.pdb
+        rm -rf ./zenith-injector/Release/*.obj
+        ls -R
+      
+    - name: Upload latest artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: zenith-injector-release
+        path: ./zenith-injector/Release/*
+        if-no-files-found: error

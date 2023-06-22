@@ -43,5 +43,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.0
       with:
         name: zenith-injector-release
-        path: ./zenith-injector/Release/*
+        path: ./zenith-injector/x64/Release/*
         if-no-files-found: error
